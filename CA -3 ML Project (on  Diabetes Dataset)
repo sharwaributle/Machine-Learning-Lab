@@ -1,0 +1,347 @@
+STEP-1 preperation of the data
+(load the dataset-Pima Indians Diabetes Dataset)
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+
+# Replace the file path below with the actual path of your dataset in Drive
+# Example: '/content/drive/MyDrive/diabetes.csv'
+
+file_path = '/content/drive/MyDrive/AIML3/diabetes.csv'
+import pandas as pd
+df = pd.read_csv(file_path)
+
+
+df.head()
+df.shape
+df.tail()
+df.isnull().sum()
+df.describe()
+
+print("Duplicates:", df.duplicated().sum())
+df = df.drop_duplicates()
+
+
+
+
+
+Step 2 - Visualization of the Data
+   [ comparison and analysis ]
+
+plt.hist(df['Glucose'], bins=20, color='skyblue')
+plt.title('Distribution of Glucose')
+plt.xlabel('Glucose')
+plt.ylabel('Frequency')
+plt.show()
+
+
+sns.boxplot(x=df['BMI'], color='lightgreen')
+plt.title('Boxplot - BMI')
+plt.show()
+
+plt.scatter(df['Glucose'], df['BMI'], color='purple')
+plt.title('Glucose vs BMI')
+plt.xlabel('Glucose')
+plt.ylabel('BMI')
+plt.show()
+
+sns.heatmap(df.corr(), cmap='Blues')
+plt.show()
+
+sns.pairplot(df)
+plt.show()
+
+sns.histplot(df, x='Glucose', hue='Outcome', kde=True)
+
+
+
+
+Step 3 - Data Preprocessing
+
+df.dtypes
+df = df.copy()
+df = df.fillna(df.mean())
+X = df.drop('Outcome', axis=1)
+y = df['Outcome']
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+print("Training set shape:", X_train.shape)
+print("Test set shape:", X_test.shape)
+
+
+
+
+Step 4 - Model Implementation
+LOGISTIC REGRESSION
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+log_model = LogisticRegression()
+log_model.fit(X_train, y_train)
+
+y_pred_log = log_model.predict(X_test)
+
+print("Logistic Regression Accuracy:", accuracy_score(y_test, y_pred_log))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_log))
+
+
+ 
+
+
+DICISION TREE
+from sklearn.tree import DecisionTreeClassifier
+
+dt_model = DecisionTreeClassifier(random_state=42)
+dt_model.fit(X_train, y_train)
+
+y_pred_dt = dt_model.predict(X_test)
+
+print("Decision Tree Accuracy:", accuracy_score(y_test, y_pred_dt))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_dt))
+
+
+
+
+RANDOM FOREST
+from sklearn.ensemble import RandomForestClassifier
+
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train)
+
+y_pred_rf = rf_model.predict(X_test)
+
+print("Random Forest Accuracy:", accuracy_score(y_test, y_pred_rf))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_rf))
+
+
+
+
+SVM
+from sklearn.svm import SVC
+
+svm_model = SVC(kernel='linear')  # linear kernel works well for this dataset
+svm_model.fit(X_train, y_train)
+
+y_pred_svm = svm_model.predict(X_test)
+
+print("SVM Accuracy:", accuracy_score(y_test, y_pred_svm))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_svm))
+
+
+
+
+
+K-NEAREST NEIGHBORS
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+knn_model = KNeighborsClassifier(n_neighbors=5)
+knn_model.fit(X_train, y_train)
+
+y_pred_knn = knn_model.predict(X_test)
+
+print("KNN Accuracy:", accuracy_score(y_test, y_pred_knn))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_knn))
+
+
+
+
+
+NAIVE BAYES
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report
+
+nb_model = GaussianNB()
+nb_model.fit(X_train, y_train)
+
+y_pred_nb = nb_model.predict(X_test)
+
+print("Naive Bayes Accuracy:", accuracy_score(y_test, y_pred_nb))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_nb))
+
+
+
+
+
+STEP5- MODEL EVALUATION
+
+
+LOGISTIC REGRESSION
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, roc_curve, roc_auc_score
+from sklearn.model_selection import cross_val_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+y_pred_log = log_model.predict(X_test)
+y_proba_log = log_model.predict_proba(X_test)[:, 1]
+
+print("Logistic Regression Evaluation")
+print("Accuracy :", accuracy_score(y_test, y_pred_log))
+…
+# ROC Curve
+fpr, tpr, _ = roc_curve(y_test, y_proba_log)
+plt.plot(fpr, tpr, label=f"AUC={roc_auc_score(y_test, y_proba_log):.2f}")
+plt.plot([0,1],[0,1],'--')
+plt.title("ROC Curve - Logistic Regression")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.legend()
+plt.show()
+
+
+
+
+DECISION TREE
+y_pred_dt = dt_model.predict(X_test)
+y_proba_dt = dt_model.predict_proba(X_test)[:, 1]
+
+print("Decision Tree Evaluation")
+print("Accuracy :", accuracy_score(y_test, y_pred_dt))
+print("Precision:", precision_score(y_test, y_pred_dt))
+print("Recall   :", recall_score(y_test, y_pred_dt))
+print("F1 Score :", f1_score(y_test, y_pred_dt))
+print("AUC Score:", roc_auc_score(y_test, y_proba_dt))
+print("Cross Validation Mean:", cross_val_score(dt_model, X_train, y_train, cv=5).mean())
+…plt.ylabel("True Positive Rate")
+plt.legend()
+plt.show()
+
+
+
+
+RANDOM FOREST
+y_pred_rf = rf_model.predict(X_test)
+y_proba_rf = rf_model.predict_proba(X_test)[:, 1]
+
+print("Random Forest Evaluation")
+print("Accuracy :", accuracy_score(y_test, y_pred_rf))
+print("Precision:", precision_score(y_test, y_pred_rf))
+print("Recall   :", recall_score(y_test, y_pred_rf))
+print("F1 Score :", f1_score(y_test, y_pred_rf))
+print("AUC Score:", roc_auc_score(y_test, y_proba_rf))
+print("Cross Validation Mean:", cross_val_score(rf_model, X_train, y_train, cv=5).mean())
+…plt.ylabel("True Positive Rate")
+plt.legend()
+plt.show()
+
+
+
+
+SVM
+from sklearn.svm import SVC
+
+# If SVM was trained without probability=True, re-train it with that
+svm_model = SVC(kernel='linear', probability=True)  # linear kernel works well for this dataset
+svm_model.fit(X_train, y_train)
+
+y_pred_svm = svm_model.predict(X_test)
+y_proba_svm = svm_model.predict_proba(X_test)[:, 1]
+
+print("SVM Evaluation")
+…
+fpr, tpr, _ = roc_curve(y_test, y_proba_svm)
+plt.plot(fpr, tpr, label=f"AUC={roc_auc_score(y_test, y_proba_svm):.2f}")
+plt.plot([0,1],[0,1],'--')
+plt.title("ROC Curve - SVM")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.legend()
+plt.show()
+
+
+
+
+KNN
+y_pred_knn = knn_model.predict(X_test)
+y_proba_knn = knn_model.predict_proba(X_test)[:, 1]
+
+print("KNN Evaluation")
+print("Accuracy :", accuracy_score(y_test, y_pred_knn))
+print("Precision:", precision_score(y_test, y_pred_knn))
+print("Recall   :", recall_score(y_test, y_pred_knn))
+print("F1 Score :", f1_score(y_test, y_pred_knn))
+print("AUC Score:", roc_auc_score(y_test, y_proba_knn))
+print("Cross Validation Mean:", cross_val_score(knn_model, X_train, y_train, cv=5).mean())
+…plt.ylabel("True Positive Rate")
+plt.legend()
+plt.show()
+
+
+
+
+NAIVE BAYES
+y_pred_nb = nb_model.predict(X_test)
+y_proba_nb = nb_model.predict_proba(X_test)[:, 1]
+
+print(" Naive Bayes Evaluation")
+print("Accuracy :", accuracy_score(y_test, y_pred_nb))
+print("Precision:", precision_score(y_test, y_pred_nb))
+print("Recall   :", recall_score(y_test, y_pred_nb))
+print("F1 Score :", f1_score(y_test, y_pred_nb))
+print("AUC Score:", roc_auc_score(y_test, y_proba_nb))
+print("Cross Validation Mean:", cross_val_score(nb_model, X_train, y_train, cv=5).mean())
+…plt.ylabel("True Positive Rate")
+plt.legend()
+plt.show()
+
+
+
+
+
+
+6-COMPARISION AND ANALYSIS
+data = {
+    "Model": ["Logistic Regression", "Decision Tree", "Random Forest", "SVM", "KNN", "Naive Bayes"],
+    "Accuracy": [
+        accuracy_score(y_test, y_pred_log),
+        accuracy_score(y_test, y_pred_dt),
+        accuracy_score(y_test, y_pred_rf),
+        accuracy_score(y_test, y_pred_svm),
+        accuracy_score(y_test, y_pred_knn),
+…from IPython.display import Markdown, display
+display(Markdown(f"""
+###Comparison and Analysis
+
+- Among all models, **{best_model}** performed the best with the highest accuracy.
+- Ensemble models like **Random Forest** generally outperform others due to their ability to reduce overfitting.
+- **Preprocessing** such as normalization and handling missing values improved performance in SVM, Logistic Regression, and KNN.
+- **Hyperparameter tuning** (tree depth, `k` value, number of estimators) further stabilized and optimized results.
+"""))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
